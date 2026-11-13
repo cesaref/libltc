@@ -286,6 +286,7 @@ void decode_ltc(LTCDecoder *d, ltcsnd_sample_t *sound, size_t size, ltc_off_t po
 	size_t i;
 
 	for (i = 0 ; i < size ; i++) {
+		const int long_silence_cnt = (d->snd_to_biphase_period * 4);
 		ltcsnd_sample_t max_threshold, min_threshold;
 
 		/* track minimum and maximum values */
@@ -321,7 +322,7 @@ void decode_ltc(LTCDecoder *d, ltcsnd_sample_t *sound, size_t size, ltc_off_t po
 
 			}
 
-			if (d->snd_to_biphase_cnt > (d->snd_to_biphase_period * 4)) {
+			if (d->snd_to_biphase_cnt > long_silence_cnt) {
 				/* "long" silence in between
 				 * -> reset parser, don't use it for phase-tracking
 				 */
@@ -343,6 +344,8 @@ void decode_ltc(LTCDecoder *d, ltcsnd_sample_t *sound, size_t size, ltc_off_t po
 			d->snd_to_biphase_cnt = 0;
 			d->snd_to_biphase_state = !d->snd_to_biphase_state;
 		}
-		d->snd_to_biphase_cnt++;
+
+		if (d->snd_to_biphase_cnt <= long_silence_cnt)
+			d->snd_to_biphase_cnt++;
 	}
 }
